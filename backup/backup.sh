@@ -7,10 +7,16 @@ set -eou pipefail
 MYSQL_USER=""
 MYSQL_DATABASE=""
 MYSQL_PASSWORD=""
-MYSQL_HOST="localhost"
+MYSQL_HOST=""
 
 # the database dump file
-DUMP_DIR=""
+DUMP_DIR="$(pwd)"
+
+# the type of backup to perform
+BACKUP_TYPE="data" # this can be 'schema', 'data', or 'both'
+
+# tells it to use GZIP or not
+USE_GZIP=true
 
 # the frequency of backup is expected to be passed in to the script
 # if the frequency is not set, it will append $DEFAULT_FREQUENCY to
@@ -20,7 +26,7 @@ FREQUENCY="${FREQUENCY:-$DEFAULT_FREQUENCY}"
 
 case "$FREQUENCY" in
   minute | hourly)
-    DATE="$(date '+%d-%m-%Y %R:%S')"
+    DATE="$(date '+%d-%m-%Y-%R:%S')"
     ;;
 
   daily | weekly | biweekly | monthly)
@@ -28,7 +34,7 @@ case "$FREQUENCY" in
     ;;
 
   *)
-    DATE="$(date '+%d-%m-%Y %R:%S')"
+    DATE="$(date '+%d-%m-%Y%-R:%S')"
     ;;
 esac
 
@@ -49,15 +55,31 @@ if [ ! -d "$DUMP_DIR" ]; then
   mkdir -p "$DUMP_DIR"
 fi
 
+case "$BACKUP_TYPE" in
+  data)
+    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --complete-insert --hex-blob --no-create-info --no-create-db --skip-triggers --ignore-table=$MYSQL_DATABASE.stage_billing_service,$MYSQL_DATABASE.stage_subsidy )
+    ;;
+
+  schema)
+    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --routines --no-data )
+    ;;
+
+  *)
+    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --routines --complete-insert --hex-blob )
+    ;;
+esac
+
 ##
 # Actually execute the database dump
 ##
 OUTFILE="$DUMP_DIR/$MYSQL_DATABASE.$DATE.$FREQUENCY.sql"
-mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE > "$OUTFILE"
+"${DUMP_CMD[@]}" > "$OUTFILE"
 
 ##
 # Compress the output with gzip
 ##
-gzip "$OUTFILE"
+if [ "$USE_GZIP" = true ]; then
+  gzip "$OUTFILE"
+fi
 
 echo "Backed up $MYSQL_DATABASE to $OUTFILE"
