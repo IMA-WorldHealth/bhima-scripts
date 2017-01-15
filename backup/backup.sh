@@ -9,8 +9,10 @@ MYSQL_DATABASE=""
 MYSQL_PASSWORD=""
 MYSQL_HOST=""
 
-# the database dump file
-DUMP_DIR="$(pwd)"
+# the database dump directory - default to the current directory if not defined
+PWD="$(pwd)"
+DAILY_DIR_NAME="$(date '+%d-%m-%Y')"
+DUMP_DIR="${DUMP_DIR:-$PWD}/$DAILY_DIR_NAME"
 
 # the type of backup to perform
 BACKUP_TYPE="data" # this can be 'schema', 'data', or 'both'
