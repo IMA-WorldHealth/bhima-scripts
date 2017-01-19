@@ -7,12 +7,13 @@ set -eou pipefail
 MYSQL_USER=""
 MYSQL_DATABASE=""
 MYSQL_PASSWORD=""
-MYSQL_HOST=""
+MYSQL_HOST="localhost"
 
 # the database dump directory - default to the current directory if not defined
 PWD="$(pwd)"
 DAILY_DIR_NAME="$(date '+%d-%m-%Y')"
-DUMP_DIR="${DUMP_DIR:-$PWD}/$DAILY_DIR_NAME"
+DUMP_BASE_DIR="${DUMP_DIR:-$PWD}"
+DUMP_DIR="$DUMP_BASE_DIR/$DAILY_DIR_NAME"
 
 # the type of backup to perform
 BACKUP_TYPE="data" # this can be 'schema', 'data', or 'both'
@@ -59,15 +60,15 @@ fi
 
 case "$BACKUP_TYPE" in
   data)
-    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --complete-insert --hex-blob --no-create-info --no-create-db --skip-triggers --ignore-table=$MYSQL_DATABASE.stage_billing_service,$MYSQL_DATABASE.stage_subsidy )
+    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --complete-insert --hex-blob --no-create-info --no-create-db --skip-triggers --ignore-table=$MYSQL_DATABASE.document_map,$MYSQL_DATABASE.entity_map --skip-add-locks --single-transaction )
     ;;
 
   schema)
-    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --routines --no-data )
+    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --routines --no-data  --skip-add-locks )
     ;;
 
   *)
-    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --routines --complete-insert --hex-blob )
+    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --routines --complete-insert --hex-blob  --skip-add-locks --single-transaction )
     ;;
 esac
 
@@ -83,5 +84,8 @@ OUTFILE="$DUMP_DIR/$MYSQL_DATABASE.$DATE.$FREQUENCY.sql"
 if [ "$USE_GZIP" = true ]; then
   gzip "$OUTFILE"
 fi
+
+# clean out dump directories older than 14 days old (two weeks).
+find $DUMP_BASE/* -type d -ctime +14 -exec rm -rf {} +
 
 echo "Backed up $MYSQL_DATABASE to $OUTFILE"
