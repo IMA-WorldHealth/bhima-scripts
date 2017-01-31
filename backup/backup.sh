@@ -60,7 +60,7 @@ fi
 
 case "$BACKUP_TYPE" in
   data)
-    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --complete-insert --hex-blob --no-create-info --no-create-db --skip-triggers --ignore-table=$MYSQL_DATABASE.document_map,$MYSQL_DATABASE.entity_map --skip-add-locks --single-transaction )
+    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --complete-insert --hex-blob --no-create-info --no-create-db --skip-triggers --ignore-table=$MYSQL_DATABASE.document_map --ignore-table=$MYSQL_DATABASE.entity_map --skip-add-locks --single-transaction )
     ;;
 
   schema)
@@ -86,6 +86,6 @@ if [ "$USE_GZIP" = true ]; then
 fi
 
 # clean out dump directories older than 14 days old (two weeks).
-find $DUMP_BASE/* -type d -ctime +14 -exec rm -rf {} +
+find $DUMP_BASE_DIR/* -type d -ctime +14 -exec rm -rf {} +
 
 echo "Backed up $MYSQL_DATABASE to $OUTFILE"

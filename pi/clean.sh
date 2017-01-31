@@ -23,6 +23,7 @@ claws-mail
 epiphany-browser
 netsurf-gtk
 realvnc-vnc-server realvnc-vnc-viewer
+python-picraft python3-picraft
 "
 
 
