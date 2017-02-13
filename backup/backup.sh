@@ -3,11 +3,8 @@
 # bash strict mode
 set -eou pipefail
 
-# the MySQL database credentials to be passed to mysql dump
-MYSQL_USER=""
-MYSQL_DATABASE=""
-MYSQL_PASSWORD=""
-MYSQL_HOST="localhost"
+# source the variables
+. ./variables.sh
 
 # the database dump directory - default to the current directory if not defined
 PWD="$(pwd)"
@@ -16,10 +13,10 @@ DUMP_BASE_DIR="${DUMP_DIR:-$PWD}"
 DUMP_DIR="$DUMP_BASE_DIR/$DAILY_DIR_NAME"
 
 # the type of backup to perform
-BACKUP_TYPE="data" # this can be 'schema', 'data', or 'both'
+BACKUP_TYPE="${BACKUP_TYPE:-data}" # this can be 'schema', 'data', or 'both'
 
 # tells it to use GZIP or not
-USE_GZIP=true
+USE_GZIP="${USE_GZIP:-true}"
 
 # the frequency of backup is expected to be passed in to the script
 # if the frequency is not set, it will append $DEFAULT_FREQUENCY to
@@ -64,18 +61,18 @@ case "$BACKUP_TYPE" in
     ;;
 
   schema)
-    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --routines --no-data  --skip-add-locks )
+    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --routines --no-data --skip-add-locks )
     ;;
 
   *)
-    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --routines --complete-insert --hex-blob  --skip-add-locks --single-transaction )
+    DUMP_CMD=( mysqldump -u$MYSQL_USER -p$MYSQL_PASSWORD -h$MYSQL_HOST $MYSQL_DATABASE --routines --complete-insert --hex-blob --skip-add-locks --single-transaction --ignore-table=$MYSQL_DATABASE.document_map --ignore-table=$MYSQL_DATABASE.entity_map  )
     ;;
 esac
 
 ##
 # Actually execute the database dump
 ##
-OUTFILE="$DUMP_DIR/$MYSQL_DATABASE.$DATE.$FREQUENCY.sql"
+OUTFILE="${OUTFILE:-$DUMP_DIR/$MYSQL_DATABASE.$DATE.$FREQUENCY.sql}"
 "${DUMP_CMD[@]}" > "$OUTFILE"
 
 ##

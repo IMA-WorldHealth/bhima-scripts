@@ -3,14 +3,10 @@
 # bash strict mode
 set -eou pipefail
 
-# the MySQL database credentials to be passed to mysql dump
-MYSQL_USER=""
-MYSQL_DATABASE=""
-MYSQL_PASSWORD=""
-MYSQL_HOST="localhost"
+# source the variables
+. ./variables.sh
 
-INSTALL_DIR="/opt/bhima"
-DUMP_FILE="dump.sql"
+DUMP_FILE="${DUMP_FILE:-'dump.sql'}"
 
 # build the test database
 echo "Rebuilding database from a dump file"
@@ -29,4 +25,4 @@ mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < $INSTALL_DIR/server/mod
 mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < $INSTALL_DIR/server/models/procedures.sql
 
 echo "Building dump...."
-mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < dump.sql
+mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < $DUMP_FILE
