@@ -26,3 +26,7 @@ mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < $INSTALL_DIR/server/mod
 
 echo "Building dump...."
 mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < $DUMP_FILE
+
+echo "Recomputing calculations..."
+mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "CALL zRecomputeEntityMap();"
+mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "CALL zRecomputeDocumentMap();"
