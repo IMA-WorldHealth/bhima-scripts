@@ -1,8 +1,9 @@
 TODO
 
-- [ ] Make a restore script to restore from backups
-- [ ] Make sure backups build the first time they are installed
-- [ ] Read all data from a variables.sh file produced during installation
+- [x] Make a restore script to restore from backups
+- [x] Make sure backups build the first time they are installed
+- [x] Read all data from a variables.sh file produced during installation
+- [ ] Detect and restore from a Gzipped backup file.
 
 BUGS
 - [ ] Make sure the MySQL configuration has STRICT ALL TABLES set in the my.cnf
