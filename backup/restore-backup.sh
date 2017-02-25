@@ -23,6 +23,7 @@ mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < $INSTALL_DIR/server/mod
 echo "Building functions and procedures"
 mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < $INSTALL_DIR/server/models/functions.sql
 mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < $INSTALL_DIR/server/models/procedures.sql
+mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < $INSTALL_DIR/server/models/admin.sql
 
 echo "Building dump...."
 mysql -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < $DUMP_FILE
